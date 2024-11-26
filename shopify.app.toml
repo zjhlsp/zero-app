@@ -1,0 +1,32 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "43d6133c535fc0a09a80ee4de1e675d3"
+name = "test2"
+handle = "test2-1118"
+application_url = "https://oc-volvo-reynolds-concerts.trycloudflare.com"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products"
+
+[auth]
+redirect_urls = [
+  "https://oc-volvo-reynolds-concerts.trycloudflare.com/auth/callback",
+  "https://oc-volvo-reynolds-concerts.trycloudflare.com/auth/shopify/callback",
+  "https://oc-volvo-reynolds-concerts.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-10"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+[pos]
+embedded = false
+
+[build]
+dev_store_url = "zerozero-app.myshopify.com"
+automatically_update_urls_on_dev = true
