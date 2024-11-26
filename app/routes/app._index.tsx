@@ -39,7 +39,7 @@ export default function Index() {
 
   return (
     <Page>
-      <ui-title-bar title="零零满减规则">
+      <ui-title-bar title={`${JSON.stringify(Shop, null, 2).replace('.myshopify.com"', '').replace("\"", '')} 满减`}>
         <button variant="primary" onClick={() => navigate("/app/qrcodes/new")}>
           创建规则
         </button>
@@ -47,9 +47,8 @@ export default function Index() {
       <Layout>
         <Layout.Section>
         <Card padding="0">
-            {JSON.stringify(Shop, null, 2)}
             {Rules.length === 0 ? (
-              <EmptyRulesState onAction={() => navigate("qrcodes/new")} />
+              <EmptyRulesState onAction={() => navigate("rules/new")} />
             ) : (
             <RuleTable Rules={Rules} />
             )}
