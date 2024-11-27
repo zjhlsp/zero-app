@@ -1,26 +1,28 @@
 import db from '../db.server';
 
 export async function getRule(id, graphql) {
-    const rule = await db.discount1.findFirst({ where: { id } });
+    const rule = await db.discount2.findFirst({ where: { id } });
   
     if (!rule) {
         return null;
     }
   
-    return supplementRule(rule, graphql);
+    // return supplementRule(rule, graphql);
+    return rule;
 }
 
 export async function getRules(shop, graphql) {
-    const rules = await db.discount1.findMany({
+    const rules = await db.discount2.findMany({
       where: { shop },
       orderBy: { id: "desc" },
     });
   
     if (rules.length === 0) return [];
   
-    return Promise.all(
-        rules.map((rule) => supplementRule(rule, graphql))
-    );
+  //   return Promise.all(
+  //     rules.map((rule) => supplementRule(rule, graphql))
+  // );
+  return  rules
   }
 
   export function validateRule(data) {
@@ -123,7 +125,7 @@ async function supplementRule(rule, graphql) {
 // import db from '../db.server';
 
 // export async function getRule(id, graphql) {
-//     const rule = await db.discount1s.findFirst({ where: { id } });
+//     const rule = await db.discount2s.findFirst({ where: { id } });
   
 //     if (!rule) {
 //         return null;
@@ -133,7 +135,7 @@ async function supplementRule(rule, graphql) {
 // }
 
 // export async function getRules(shop, graphql) {
-//     const rules = await db.discount1s.findMany({
+//     const rules = await db.discount2s.findMany({
 //         where: { shop },
 //         orderBy: { id: "desc" },
 //     });

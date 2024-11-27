@@ -40,7 +40,7 @@ export default function Index() {
   return (
     <Page>
       <ui-title-bar title={`${JSON.stringify(Shop, null, 2).replace('.myshopify.com"', '').replace("\"", '')} 满减`}>
-        <button variant="primary" onClick={() => navigate("/app/qrcodes/new")}>
+        <button variant="primary" onClick={() => navigate("/app/rules/new")}>
           创建规则
         </button>
       </ui-title-bar>

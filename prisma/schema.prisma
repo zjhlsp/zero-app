@@ -48,10 +48,10 @@ model discount1 {
   spendThreshold   Float?
   discountAmount   Float?
 
-  requiredProductId Int?
+  requiredProductId String?
   requiredProduct   String?
   requiredQuantity  Int?    @default(1)
-  giftedProductId   Int?
+  giftedProductId   String?
   giftedProduct     String?
   giftedQuantity    Int?    @default(1)
   maxGiftedQuantity Int?    @default(1)
