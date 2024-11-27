@@ -14,10 +14,10 @@ CREATE TABLE "discount1" (
     "maxUsage" INTEGER,
     "spendThreshold" REAL,
     "discountAmount" REAL,
-    "requiredProductId" INTEGER,
+    "requiredProductId" TEXT,
     "requiredProduct" TEXT,
     "requiredQuantity" INTEGER DEFAULT 1,
-    "giftedProductId" INTEGER,
+    "giftedProductId" TEXT,
     "giftedProduct" TEXT,
     "giftedQuantity" INTEGER DEFAULT 1,
     "maxGiftedQuantity" INTEGER DEFAULT 1

@@ -49,10 +49,8 @@ model discount1 {
   discountAmount   Float?
 
   requiredProductId String?
-  requiredProduct   String?
   requiredQuantity  Int?    @default(1)
   giftedProductId   String?
-  giftedProduct     String?
   giftedQuantity    Int?    @default(1)
   maxGiftedQuantity Int?    @default(1)
 }

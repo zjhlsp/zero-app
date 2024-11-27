@@ -31,7 +31,7 @@ import {
 import { ImageIcon } from "@shopify/polaris-icons";
 
 import db from "../db.server";
-import { getRule, validateRule } from "../models/discount.server";
+import { getRule, supplementRule, validateRule } from "../models/discount.server";
 import type { RuleData } from "./rule.model";
 
 // 判断是否是新建
@@ -44,8 +44,9 @@ export async function loader({ request, params }: any) {
       type: "buy_x_get_y",
     });
   }
+  const result =  json(await getRule(Number(params.id), admin.graphql));
 
-  return json(await getRule(Number(params.id), admin.graphql));
+  return result
 }
 
 // 服务端表单操作
@@ -64,23 +65,42 @@ export async function action({ request, params }: any) {
     return redirect("/app");
   }
 
-  const errors = validateRule(data);
-
-  if (errors) {
-    return json({ errors }, { status: 422 });
+  data.counts = 0
+  data.createdAt = new Date()
+  data.startTime = new Date()
+  data.endTime = new Date()
+  data.maxUsage = 1
+  data.spendThreshold = 1
+  data.discountAmount = 1
+  data.status = 'active'
+  if (data.id) {
+    data.id = Number(data.id)
   }
-
+  data.requiredQuantity = Number(data.requiredQuantity)
+  data.maxGiftedQuantity = Number(data.maxGiftedQuantity)
+  data.giftedQuantity = Number(data.giftedQuantity)
   const rule =
     params.id === "new"
       ? await db.discount1.create({ data })
       : await db.discount1.update({ where: { id: Number(params.id) }, data });
 
-  return redirect(`/app/qrcodes/${rule.id}`);
+  return redirect(`/app`);
 }
 
-export default function RuleForm() {
+export default async function RuleForm() {
   const errors: any = useActionData<typeof action>()?.errors || {};
   const ruleData: RuleData = useLoaderData(); // loader初始数据
+
+  let product:any = {}
+  let gift:any = {}
+  if(ruleData.name && ruleData.type === 'buy_x_get_y') {
+    const result = await supplementRule(ruleData)
+    product = result.product
+    gift = result.gift
+  }
+  const [productState, setProductState] = useState(product);
+  const [giftState, setGiftState] = useState(gift);
+  
   const [formState, setFormState] = useState(ruleData);
   const [cleanFormState, setCleanFormState] = useState(ruleData);
   const isDirty = JSON.stringify(formState) !== JSON.stringify(cleanFormState);
@@ -91,10 +111,6 @@ export default function RuleForm() {
     nav.state === "submitting" && nav.formData?.get("action") === "delete";
   const navigate = useNavigate();
 
-  let product: any = {};
-  let gift: any = {};
-  // const [formState, setFormState] = useState(ruleData);
-
   async function selectProduct(type: "product" | "gift") {
     const products: any = await window.shopify.resourcePicker({
       type: "product",
@@ -103,49 +119,30 @@ export default function RuleForm() {
 
     if (products) {
       const { images, id, variants, title, handle } = products[0];
-      const product = {
-        img: images[0].originalSrc,
-        id,
-        title,
-        handle,
-      };
       if (type === "product") {
+        setProductState({
+          img: images,
+          title
+        })
         setFormState({
           ...formState,
           requiredProductId: id,
-          requiredProduct: product,
         });
       } else {
+        setGiftState({
+          img: images,
+          title
+        })
         setFormState({
           ...formState,
           giftedProductId: variants[0].id,
-          giftedProduct: product,
         });
       }
     }
   }
   const submit = useSubmit();
   function handleSave() {
-    const data = {
-      id: formState.id,
-      name: formState.name,
-      type: formState.type,
-      description: formState.description || "",
-      status: formState.status,
-      counts: formState.counts,
-      createdAt: formState.createdAt,
-      spendThreshold: formState.spendThreshold || "",
-      discountAmount: formState.discountAmount || "",
-      requiredProductId: formState.requiredProductId || "",
-      requiredQuantity: formState.requiredQuantity || "",
-      giftedProductId: formState.giftedProductId || "",
-      giftedQuantity: formState.giftedQuantity || "",
-      maxGiftedQuantity: formState.maxGiftedQuantity || "",
-      startTime: formState.startTime || "",
-      endTime: formState.giftedQuantity || "",
-      userEligibility: formState.giftedQuantity || "",
-      maxUsage: formState.giftedQuantity || "",
-    };
+    const data = formState;
 
     setCleanFormState({ ...formState });
     submit(data, { method: "post" });
@@ -209,9 +206,9 @@ export default function RuleForm() {
                 需要购买的产品
               </Text>
               <InlineStack gap="500" blockAlign="center">
-                {formState?.requiredProduct?.img ? (
+                {productState?.img ? (
                   <Thumbnail
-                    source={formState?.requiredProduct?.img || ""}
+                    source={productState?.img || ""}
                     size="large"
                     alt="Black choker necklace"
                   />
@@ -219,14 +216,15 @@ export default function RuleForm() {
                   <SkeletonThumbnail size="large" />
                 )}
                 <BlockStack gap="300">
+                  {}
                   <Text as={"h3"} variant="headingMd">
-                    产品名：{formState?.requiredProduct?.title}
+                    产品名：{productState?.title || "未选择产品"}
                   </Text>
                   <Button
                     onClick={() => selectProduct("product")}
                     id="select-product"
                   >
-                    Select product
+                    选择产品
                   </Button>
                   {errors.id ? (
                     <InlineError message={errors.id} fieldID="myFieldID" />
@@ -257,9 +255,9 @@ export default function RuleForm() {
                 赠送的礼品
               </Text>
               <InlineStack gap="500" blockAlign="center">
-                {formState?.giftedProduct?.img ? (
+                {giftState?.img ? (
                   <Thumbnail
-                    source={formState?.giftedProduct?.img || ""}
+                    source={giftState?.img || ""}
                     size="large"
                     alt="Black choker necklace"
                   />
@@ -268,13 +266,13 @@ export default function RuleForm() {
                 )}
                 <BlockStack gap="300">
                   <Text as={"h3"} variant="headingMd">
-                    产品名：{formState?.giftedProduct?.title}
+                    赠品名：{giftState?.title || "未选择赠品"}
                   </Text>
                   <Button
                     onClick={() => selectProduct("gift")}
                     id="select-gift"
                   >
-                    Select Gift
+                    选择赠品
                   </Button>
                   {errors.id ? (
                     <InlineError message={errors.id} fieldID="myFieldID" />
@@ -290,6 +288,18 @@ export default function RuleForm() {
                     setFormState({
                       ...formState,
                       giftedQuantity: Number(number),
+                    })
+                  }
+                  autoComplete="off"
+                />
+                <TextField
+                  label="单次购买最大赠品数量"
+                  type="number"
+                  value={(formState?.maxGiftedQuantity as string) || "1"}
+                  onChange={(number) =>
+                    setFormState({
+                      ...formState,
+                      maxGiftedQuantity: Number(number),
                     })
                   }
                   autoComplete="off"
