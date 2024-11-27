@@ -31,23 +31,30 @@ model Session {
   emailVerified Boolean?  @default(false)
 }
 
-model newdiscount {
+
+model discount1 {
   id               Int      @id @default(autoincrement())
   name             String   
   shop             String
-  shsdfsop         String?
-  type             String 
-  status           String 
+  type             String
+  status           String
   description      String?
   counts           Int      @default(0)
   createdAt        DateTime @default(now())
-
+  startTime        DateTime?
+  endTime          DateTime?
+  userEligibility  String?
+  maxUsage         Int?
   spendThreshold   Float?
   discountAmount   Float?
 
   requiredProductId Int?
+  requiredProduct   String?
   requiredQuantity  Int?    @default(1)
   giftedProductId   Int?
+  giftedProduct     String?
   giftedQuantity    Int?    @default(1)
+  maxGiftedQuantity Int?    @default(1)
 }
+
 

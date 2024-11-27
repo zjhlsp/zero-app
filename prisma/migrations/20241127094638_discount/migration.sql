@@ -1,18 +1,24 @@
 -- CreateTable
-CREATE TABLE "newdiscount" (
+CREATE TABLE "discount1" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
     "shop" TEXT NOT NULL,
-    "shsdfsop" TEXT,
     "type" TEXT NOT NULL,
     "status" TEXT NOT NULL,
     "description" TEXT,
     "counts" INTEGER NOT NULL DEFAULT 0,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "startTime" DATETIME,
+    "endTime" DATETIME,
+    "userEligibility" TEXT,
+    "maxUsage" INTEGER,
     "spendThreshold" REAL,
     "discountAmount" REAL,
     "requiredProductId" INTEGER,
+    "requiredProduct" TEXT,
     "requiredQuantity" INTEGER DEFAULT 1,
     "giftedProductId" INTEGER,
-    "giftedQuantity" INTEGER DEFAULT 1
+    "giftedProduct" TEXT,
+    "giftedQuantity" INTEGER DEFAULT 1,
+    "maxGiftedQuantity" INTEGER DEFAULT 1
 );

@@ -10,7 +10,14 @@ export interface RuleData {
     discountAmount?: number | '';
   
     requiredProductId?: number | '';
+    requiredProduct?: any;
     requiredQuantity?: number | '';
     giftedProductId?: number | '';
+    giftedProduct?: any;
     giftedQuantity?: number | '';
+    maxGiftedQuantity?: number | ''; 
+    startTime?: string;
+    endTime?: string;
+    userEligibility?: string;
+    maxUsage?: number;
 }
