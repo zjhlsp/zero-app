@@ -38,6 +38,7 @@ export const RuleTable = ({ Rules }: {Rules:RuleData[]}) => (
       { title: "规则名称" },
       { title: "规则类型" },
       { title: "创建时间" },
+      { title: "状态" },
       { title: "累计使用次数" },
     ]}
     selectable={false}
@@ -62,12 +63,27 @@ export const RuleTableRow = ({ rule }:{rule:any}) => (
     <IndexTable.Cell>
       {new Date(rule.createdAt).toDateString()}
     </IndexTable.Cell>
+    <IndexTable.Cell>
+      {truncate(rule.type)}
+    </IndexTable.Cell>
     <IndexTable.Cell>{rule.counts}</IndexTable.Cell>
   </IndexTable.Row>
 );
 
 function truncate(str:string, { length = 25 } = {}) {
     if (!str) return "";
+    if (str === 'buy_x_get_y') {
+      return '买赠'
+    }
+    if (str === 'spend_x_save_y') {
+      return '满减'
+    }
+    if (str === 'active') {
+      return '启用'
+    }
+    if (str === 'spend_x_save_y') {
+      return '禁用'
+    }
     if (str.length <= length) return str;
     return str.slice(0, length) + "…";
   }

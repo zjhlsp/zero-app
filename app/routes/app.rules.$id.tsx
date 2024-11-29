@@ -31,22 +31,40 @@ import {
 import { ImageIcon } from "@shopify/polaris-icons";
 
 import db from "../db.server";
-import { getRule, supplementRule, validateRule } from "../models/discount.server";
+import {
+  getRule,
+  supplementRule,
+  validateRule,
+} from "../models/discount.server";
 import type { RuleData } from "./rule.model";
 
 // 判断是否是新建
 // 根据id初始化单个配置页
 export async function loader({ request, params }: any) {
   const { admin } = await authenticate.admin(request);
+  let product;
+  let gift;
   if (params.id === "new") {
     return json({
-      name: "",
-      type: "buy_x_get_y",
+      ruleData: {
+        status: "active",
+        name: "",
+        type: "buy_x_get_y",
+      },
+      product,
+      gift,
     });
   }
-  const result =  json(await getRule(Number(params.id), admin.graphql));
+  const ruleData: any = await getRule(Number(params.id));
 
-  return result
+  const result = await supplementRule(ruleData, admin.graphql);
+  product = result.product;
+  gift = result.gift;
+  return {
+    ruleData: ruleData,
+    product,
+    gift,
+  };
 }
 
 // 服务端表单操作
@@ -61,46 +79,42 @@ export async function action({ request, params }: any) {
   };
 
   if (data.action === "delete") {
-    await db.discount1.delete({ where: { id: Number(params.id) } });
+    await db.discount2.delete({ where: { id: Number(params.id) } });
     return redirect("/app");
   }
 
-  data.counts = 0
-  data.createdAt = new Date()
-  data.startTime = new Date()
-  data.endTime = new Date()
-  data.maxUsage = 1
-  data.spendThreshold = 1
-  data.discountAmount = 1
-  data.status = 'active'
+  data.counts = 0;
+  data.createdAt = new Date();
+  data.startTime = new Date();
+  data.endTime = new Date();
+  data.maxUsage = 1;
+  data.spendThreshold = 1;
+  data.discountAmount = 1;
+  data.status = "active";
   if (data.id) {
-    data.id = Number(data.id)
+    data.id = Number(data.id);
   }
-  data.requiredQuantity = Number(data.requiredQuantity)
-  data.maxGiftedQuantity = Number(data.maxGiftedQuantity)
-  data.giftedQuantity = Number(data.giftedQuantity)
+  data.requiredQuantity = Number(data.requiredQuantity);
+  data.maxGiftedQuantity = Number(data.maxGiftedQuantity);
+  data.giftedQuantity = Number(data.giftedQuantity);
   const rule =
     params.id === "new"
-      ? await db.discount1.create({ data })
-      : await db.discount1.update({ where: { id: Number(params.id) }, data });
+      ? await db.discount2.create({ data: data })
+      : await db.discount2.update({
+          where: { id: Number(params.id) },
+          data: data,
+        });
 
   return redirect(`/app`);
 }
 
-export default async function RuleForm() {
-  const errors: any = useActionData<typeof action>()?.errors || {};
-  const ruleData: RuleData = useLoaderData(); // loader初始数据
+export default function RuleForm() {
+  const errors = useActionData()?.errors || {};
+  const { ruleData, product, gift }: any = useLoaderData(); // loader初始数据
 
-  let product:any = {}
-  let gift:any = {}
-  if(ruleData.name && ruleData.type === 'buy_x_get_y') {
-    const result = await supplementRule(ruleData)
-    product = result.product
-    gift = result.gift
-  }
   const [productState, setProductState] = useState(product);
   const [giftState, setGiftState] = useState(gift);
-  
+
   const [formState, setFormState] = useState(ruleData);
   const [cleanFormState, setCleanFormState] = useState(ruleData);
   const isDirty = JSON.stringify(formState) !== JSON.stringify(cleanFormState);
@@ -122,8 +136,8 @@ export default async function RuleForm() {
       if (type === "product") {
         setProductState({
           img: images,
-          title
-        })
+          title,
+        });
         setFormState({
           ...formState,
           requiredProductId: id,
@@ -131,11 +145,11 @@ export default async function RuleForm() {
       } else {
         setGiftState({
           img: images,
-          title
-        })
+          title,
+        });
         setFormState({
           ...formState,
-          giftedProductId: variants[0].id,
+          giftedProductId: id,
         });
       }
     }
@@ -159,9 +173,9 @@ export default async function RuleForm() {
         <Layout.Section>
           <BlockStack gap="500">
             <Card>
-              <BlockStack gap="500">
+              <BlockStack gap="300">
                 <Text as={"h3"} variant="headingMd">
-                  规则名称
+                  基本配置
                 </Text>
                 <TextField
                   id="name"
@@ -172,6 +186,31 @@ export default async function RuleForm() {
                   value={formState.name}
                   onChange={(name) => setFormState({ ...formState, name })}
                   error={errors.title}
+                />
+                <TextField
+                  id="name"
+                  helpText="描述"
+                  label="description"
+                  labelHidden
+                  autoComplete="off"
+                  value={formState.description}
+                  onChange={(description) => setFormState({ ...formState, description })}
+                  error={errors.description}
+                />
+                <ChoiceList
+                  title="状态"
+                  choices={[
+                    { label: "启用", value: "active" },
+                    { label: "禁用", value: "inactive" },
+                  ]}
+                  selected={formState.status}
+                  onChange={(status) =>
+                    setFormState({
+                      ...formState,
+                      status: status,
+                    })
+                  }
+                  error={errors.status}
                 />
               </BlockStack>
             </Card>
@@ -199,115 +238,158 @@ export default async function RuleForm() {
             </Card>
           </BlockStack>
         </Layout.Section>
-        <Layout.Section variant="oneHalf">
-          <Card>
-            <BlockStack gap="500">
-              <Text as={"h3"} variant="headingMd">
-                需要购买的产品
-              </Text>
-              <InlineStack gap="500" blockAlign="center">
-                {productState?.img ? (
-                  <Thumbnail
-                    source={productState?.img || ""}
-                    size="large"
-                    alt="Black choker necklace"
-                  />
-                ) : (
-                  <SkeletonThumbnail size="large" />
-                )}
-                <BlockStack gap="300">
-                  {}
+        {/* 买赠类型 */}
+        {formState.type === "buy_x_get_y" && (
+          <>
+            <Layout.Section variant="oneHalf">
+              <Card>
+                <BlockStack gap="500">
                   <Text as={"h3"} variant="headingMd">
-                    产品名：{productState?.title || "未选择产品"}
+                    需要购买的产品
                   </Text>
-                  <Button
-                    onClick={() => selectProduct("product")}
-                    id="select-product"
-                  >
-                    选择产品
-                  </Button>
-                  {errors.id ? (
-                    <InlineError message={errors.id} fieldID="myFieldID" />
-                  ) : null}
+                  <InlineStack gap="500" blockAlign="center">
+                    {productState?.img ? (
+                      <Thumbnail
+                        source={productState?.img || ""}
+                        size="large"
+                        alt="Black choker necklace"
+                      />
+                    ) : (
+                      <SkeletonThumbnail size="large" />
+                    )}
+                    <BlockStack gap="300">
+                      {}
+                      <Text as={"h3"} variant="headingMd">
+                        产品名：{productState?.title || "未选择产品"}
+                      </Text>
+                      <Button
+                        onClick={() => selectProduct("product")}
+                        id="select-product"
+                      >
+                        选择产品
+                      </Button>
+                      {errors.id ? (
+                        <InlineError message={errors.id} fieldID="myFieldID" />
+                      ) : null}
+                    </BlockStack>
+                  </InlineStack>
+                  <InlineStack gap="300">
+                    <TextField
+                      label="需要购买的最低数量"
+                      type="number"
+                      value={(formState?.requiredQuantity as string) || "1"}
+                      onChange={(number) =>
+                        setFormState({
+                          ...formState,
+                          requiredQuantity: Number(number),
+                        })
+                      }
+                      autoComplete="off"
+                    />
+                  </InlineStack>
                 </BlockStack>
-              </InlineStack>
-              <InlineStack gap="300">
-                <TextField
-                  label="需要购买的最低数量"
-                  type="number"
-                  value={(formState?.requiredQuantity as string) || "1"}
-                  onChange={(number) =>
-                    setFormState({
-                      ...formState,
-                      requiredQuantity: Number(number),
-                    })
-                  }
-                  autoComplete="off"
-                />
-              </InlineStack>
-            </BlockStack>
-          </Card>
-        </Layout.Section>
-        <Layout.Section variant="oneHalf">
-          <Card>
-            <BlockStack gap="500">
-              <Text as={"h3"} variant="headingMd">
-                赠送的礼品
-              </Text>
-              <InlineStack gap="500" blockAlign="center">
-                {giftState?.img ? (
-                  <Thumbnail
-                    source={giftState?.img || ""}
-                    size="large"
-                    alt="Black choker necklace"
-                  />
-                ) : (
-                  <SkeletonThumbnail size="large" />
-                )}
-                <BlockStack gap="300">
+              </Card>
+            </Layout.Section>
+            <Layout.Section variant="oneHalf">
+              <Card>
+                <BlockStack gap="500">
                   <Text as={"h3"} variant="headingMd">
-                    赠品名：{giftState?.title || "未选择赠品"}
+                    赠送的礼品
                   </Text>
-                  <Button
-                    onClick={() => selectProduct("gift")}
-                    id="select-gift"
-                  >
-                    选择赠品
-                  </Button>
-                  {errors.id ? (
-                    <InlineError message={errors.id} fieldID="myFieldID" />
-                  ) : null}
+                  <InlineStack gap="500" blockAlign="center">
+                    {giftState?.img ? (
+                      <Thumbnail
+                        source={giftState?.img || ""}
+                        size="large"
+                        alt="Black choker necklace"
+                      />
+                    ) : (
+                      <SkeletonThumbnail size="large" />
+                    )}
+                    <BlockStack gap="300">
+                      <Text as={"h3"} variant="headingMd">
+                        赠品名：{giftState?.title || "未选择赠品"}
+                      </Text>
+                      <Button
+                        onClick={() => selectProduct("gift")}
+                        id="select-gift"
+                      >
+                        选择赠品
+                      </Button>
+                      {errors.id ? (
+                        <InlineError message={errors.id} fieldID="myFieldID" />
+                      ) : null}
+                    </BlockStack>
+                  </InlineStack>
+                  <InlineStack gap="300">
+                    <TextField
+                      label="赠送礼品的数量"
+                      type="number"
+                      value={(formState?.giftedQuantity as string) || "1"}
+                      onChange={(number) =>
+                        setFormState({
+                          ...formState,
+                          giftedQuantity: Number(number),
+                        })
+                      }
+                      autoComplete="off"
+                    />
+                    <TextField
+                      label="单次购买最大赠品数量"
+                      type="number"
+                      value={(formState?.maxGiftedQuantity as string) || "1"}
+                      onChange={(number) =>
+                        setFormState({
+                          ...formState,
+                          maxGiftedQuantity: Number(number),
+                        })
+                      }
+                      autoComplete="off"
+                    />
+                  </InlineStack>
                 </BlockStack>
-              </InlineStack>
-              <InlineStack gap="300">
+              </Card>
+            </Layout.Section>
+          </>
+        )}
+
+        {/* 满减类型 */}
+        {formState.type === "spend_x_save_y" && (
+          <>
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="500">
                 <TextField
-                  label="赠送礼品的数量"
+                  label="触发额度"
                   type="number"
-                  value={(formState?.giftedQuantity as string) || "1"}
+                  value={(formState?.spendThreshold as string) || "1"}
                   onChange={(number) =>
                     setFormState({
                       ...formState,
-                      giftedQuantity: Number(number),
+                      spendThreshold: Number(number),
                     })
                   }
                   autoComplete="off"
                 />
                 <TextField
-                  label="单次购买最大赠品数量"
+                  label="减免价格"
                   type="number"
-                  value={(formState?.maxGiftedQuantity as string) || "1"}
+                  value={(formState?.discountAmount as string) || "1"}
                   onChange={(number) =>
                     setFormState({
                       ...formState,
-                      maxGiftedQuantity: Number(number),
+                      discountAmount: Number(number),
                     })
                   }
                   autoComplete="off"
                 />
-              </InlineStack>
-            </BlockStack>
-          </Card>
-        </Layout.Section>
+                </BlockStack>
+
+              </Card>
+            </Layout.Section>
+          </>
+        )}
+
         <Layout.Section>
           <PageActions
             secondaryActions={[

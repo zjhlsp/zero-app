@@ -1,7 +1,7 @@
 import db from "../db.server";
 
 export async function getRule(id, graphql) {
-  const rule = await db.discount1.findFirst({ where: { id } });
+  const rule = await db.discount2.findFirst({ where: { id } });
 
   if (!rule) {
     return null;
@@ -10,7 +10,7 @@ export async function getRule(id, graphql) {
 }
 
 export async function getRules(shop, graphql) {
-  const rules = await db.discount1.findMany({
+  const rules = await db.discount2.findMany({
     where: { shop },
     orderBy: { id: "desc" },
   });
@@ -91,8 +91,10 @@ export async function supplementRule(rule, graphql) {
       },
     );
 
-    const requiredProduct = (await requiredProductResponse.json()).data.product;
-    const giftedProduct = (await giftedProductResponse.json()).data.product;
+    let productResult = await requiredProductResponse.json();
+    let giftResult = await giftedProductResponse.json();
+    const requiredProduct = productResult.data.product;
+    const giftedProduct = giftResult.data.product;
 
     return {
       product: {

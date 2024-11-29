@@ -1,14 +1,14 @@
 /*
   Warnings:
 
-  - You are about to drop the column `giftedProduct` on the `discount1` table. All the data in the column will be lost.
-  - You are about to drop the column `requiredProduct` on the `discount1` table. All the data in the column will be lost.
+  - You are about to drop the column `giftedProduct` on the `discount2` table. All the data in the column will be lost.
+  - You are about to drop the column `requiredProduct` on the `discount2` table. All the data in the column will be lost.
 
 */
 -- RedefineTables
 PRAGMA defer_foreign_keys=ON;
 PRAGMA foreign_keys=OFF;
-CREATE TABLE "new_discount1" (
+CREATE TABLE "new_discount2" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
     "shop" TEXT NOT NULL,
@@ -29,8 +29,8 @@ CREATE TABLE "new_discount1" (
     "giftedQuantity" INTEGER DEFAULT 1,
     "maxGiftedQuantity" INTEGER DEFAULT 1
 );
-INSERT INTO "new_discount1" ("counts", "createdAt", "description", "discountAmount", "endTime", "giftedProductId", "giftedQuantity", "id", "maxGiftedQuantity", "maxUsage", "name", "requiredProductId", "requiredQuantity", "shop", "spendThreshold", "startTime", "status", "type", "userEligibility") SELECT "counts", "createdAt", "description", "discountAmount", "endTime", "giftedProductId", "giftedQuantity", "id", "maxGiftedQuantity", "maxUsage", "name", "requiredProductId", "requiredQuantity", "shop", "spendThreshold", "startTime", "status", "type", "userEligibility" FROM "discount1";
-DROP TABLE "discount1";
-ALTER TABLE "new_discount1" RENAME TO "discount1";
+INSERT INTO "new_discount2" ("counts", "createdAt", "description", "discountAmount", "endTime", "giftedProductId", "giftedQuantity", "id", "maxGiftedQuantity", "maxUsage", "name", "requiredProductId", "requiredQuantity", "shop", "spendThreshold", "startTime", "status", "type", "userEligibility") SELECT "counts", "createdAt", "description", "discountAmount", "endTime", "giftedProductId", "giftedQuantity", "id", "maxGiftedQuantity", "maxUsage", "name", "requiredProductId", "requiredQuantity", "shop", "spendThreshold", "startTime", "status", "type", "userEligibility" FROM "discount2";
+DROP TABLE "discount2";
+ALTER TABLE "new_discount2" RENAME TO "discount2";
 PRAGMA foreign_keys=ON;
 PRAGMA defer_foreign_keys=OFF;

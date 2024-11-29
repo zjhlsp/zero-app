@@ -3,7 +3,7 @@
 client_id = "43d6133c535fc0a09a80ee4de1e675d3"
 name = "test2"
 handle = "test2-1118"
-application_url = "https://orbit-study-gt-mp.trycloudflare.com"
+application_url = "https://shannon-fame-decide-accordance.trycloudflare.com"
 embedded = true
 
 [access_scopes]
@@ -12,9 +12,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://orbit-study-gt-mp.trycloudflare.com/auth/callback",
-  "https://orbit-study-gt-mp.trycloudflare.com/auth/shopify/callback",
-  "https://orbit-study-gt-mp.trycloudflare.com/api/auth/callback"
+  "https://shannon-fame-decide-accordance.trycloudflare.com/auth/callback",
+  "https://shannon-fame-decide-accordance.trycloudflare.com/auth/shopify/callback",
+  "https://shannon-fame-decide-accordance.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

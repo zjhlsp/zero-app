@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "discount1" (
+CREATE TABLE "discount2" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
     "shop" TEXT NOT NULL,

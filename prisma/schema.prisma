@@ -32,7 +32,7 @@ model Session {
 }
 
 
-model discount1 {
+model discount2 {
   id               Int      @id @default(autoincrement())
   name             String   
   shop             String
