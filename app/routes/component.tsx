@@ -64,7 +64,7 @@ export const RuleTableRow = ({ rule }:{rule:any}) => (
       {new Date(rule.createdAt).toDateString()}
     </IndexTable.Cell>
     <IndexTable.Cell>
-      {truncate(rule.type)}
+      {truncate(rule.status)}
     </IndexTable.Cell>
     <IndexTable.Cell>{rule.counts}</IndexTable.Cell>
   </IndexTable.Row>
