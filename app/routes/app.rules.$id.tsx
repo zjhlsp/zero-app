@@ -135,7 +135,7 @@ export default function RuleForm() {
       const { images, id, variants, title, handle } = products[0];
       if (type === "product") {
         setProductState({
-          img: images,
+          img: images[0].originalSrc,
           title,
         });
         setFormState({
@@ -144,7 +144,7 @@ export default function RuleForm() {
         });
       } else {
         setGiftState({
-          img: images,
+          img: images[0].originalSrc,
           title,
         });
         setFormState({
