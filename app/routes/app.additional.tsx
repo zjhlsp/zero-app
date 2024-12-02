@@ -6,11 +6,36 @@ import {
   List,
   Page,
   Text,
+  Button,
   BlockStack,
 } from "@shopify/polaris";
+import { json } from "@remix-run/node";
+import { useFetcher } from "@remix-run/react";
 import { TitleBar } from "@shopify/app-bridge-react";
 
+// action 负责处理 POST 请求
+export async function action({ request }: any) {
+  const formData = await request.formData();
+  const actionType = formData.get("actionType");
+
+  if (actionType === "button1") {
+    console.log("按钮1触发的接口逻辑");
+    return json({ info: "按钮1成功调用接口", msg: "处理逻辑A完成" });
+  } else if (actionType === "button2") {
+    console.log("按钮2触发的接口逻辑");
+    return json({ info: "按钮2成功调用接口", msg: "处理逻辑B完成" });
+  }
+
+  return json({ info: "未知操作", msg: "未匹配的逻辑" });
+}
+
 export default function AdditionalPage() {
+  const fetcher = useFetcher();
+
+  const handlePost = (actionType: string) => {
+    fetcher.submit({ actionType }, { method: "post" });
+  };
+
   return (
     <Page>
       <TitleBar title="Additional page" />
@@ -18,6 +43,13 @@ export default function AdditionalPage() {
         <Layout.Section>
           <Card>
             <BlockStack gap="300">
+              <Button onClick={() => handlePost("button1")}>触发接口1</Button>
+              <Button onClick={() => handlePost("button2")}>触发接口2</Button>
+              {fetcher.data && (
+                <Text as="p" variant="bodyMd">
+                  接口返回数据：{fetcher.data.info}, 消息：{fetcher.data.msg}
+                </Text>
+              )}
               <Text as="p" variant="bodyMd">
                 The app template comes with an additional page which
                 demonstrates how to create multiple pages within app navigation

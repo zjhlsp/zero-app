@@ -4,6 +4,8 @@ import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import {
   Card,
   EmptyState,
+  ButtonGroup,
+  Button,
   Layout,
   Page,
   IndexTable,
@@ -12,6 +14,8 @@ import {
   Icon,
   InlineStack,
 } from "@shopify/polaris";
+import {EditIcon, DeleteIcon} from '@shopify/polaris-icons';
+import db from "../db.server";
 import type { RuleData } from "./rule.model";
 export const EmptyRulesState = ({ onAction }: any) => (
   <EmptyState
@@ -40,6 +44,7 @@ export const RuleTable = ({ Rules }: {Rules:RuleData[]}) => (
       { title: "创建时间" },
       { title: "状态" },
       { title: "累计使用次数" },
+      { title: "操作" },
     ]}
     selectable={false}
   >
@@ -49,26 +54,42 @@ export const RuleTable = ({ Rules }: {Rules:RuleData[]}) => (
   </IndexTable>
 );
 
-export const RuleTableRow = ({ rule }:{rule:any}) => (
-  <IndexTable.Row id={rule.id} position={rule.id}>
-    <IndexTable.Cell>
-        <span>{rule.name}</span>
-    </IndexTable.Cell>
-    <IndexTable.Cell>
-      <Link to={`rules/${rule.id}`}>{truncate(rule.name)}</Link>
-    </IndexTable.Cell>
-    <IndexTable.Cell>
-      {truncate(rule.type)}
-    </IndexTable.Cell>
-    <IndexTable.Cell>
-      {new Date(rule.createdAt).toDateString()}
-    </IndexTable.Cell>
-    <IndexTable.Cell>
-      {truncate(rule.status)}
-    </IndexTable.Cell>
-    <IndexTable.Cell>{rule.counts}</IndexTable.Cell>
-  </IndexTable.Row>
-);
+export const RuleTableRow = ({ rule }:{rule:any}) => {
+    const navigate = useNavigate();
+    const handleDelete = async (id:number) => {
+      await db.discount2.delete({
+        where: { id: Number(id) }
+      });
+    }
+  return (
+    <IndexTable.Row id={rule.id} position={rule.id}>
+      <IndexTable.Cell>
+          <span>{rule.name}</span>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+          <span>{rule.name}</span>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        {truncate(rule.type)}
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        {new Date(rule.createdAt).toDateString()}
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        {truncate(rule.status)}
+      </IndexTable.Cell>
+      <IndexTable.Cell>{rule.counts}</IndexTable.Cell>
+      <IndexTable.Cell>
+      <ButtonGroup>
+        <Button onClick={() => navigate(`rules/${rule.id}`)} icon={EditIcon}>编辑</Button>
+        <Button onClick={() => handleDelete(rule.id)} icon={DeleteIcon}  tone="critical" >删除</Button>
+      </ButtonGroup>
+      </IndexTable.Cell>
+  
+    </IndexTable.Row>
+  )
+};
+
 
 function truncate(str:string, { length = 25 } = {}) {
     if (!str) return "";
@@ -79,10 +100,10 @@ function truncate(str:string, { length = 25 } = {}) {
       return '满减'
     }
     if (str === 'active') {
-      return '启用'
+      return '🟢 启用'
     }
     if (str === 'inactive') {
-      return '禁用'
+      return '🟠 禁用'
     }
     if (str.length <= length) return str;
     return str.slice(0, length) + "…";

@@ -207,7 +207,7 @@ export default function RuleForm() {
                   autoComplete="off"
                   value={formState.description}
                   onChange={(description) =>
-                    setFormState({ ...formState, description })
+                    setFormState({ ...formState, description:description || '' })
                   }
                   error={errors.description}
                 />
@@ -272,7 +272,6 @@ export default function RuleForm() {
                       <SkeletonThumbnail size="large" />
                     )}
                     <BlockStack gap="300">
-                      {}
                       <Text as={"h3"} variant="headingMd">
                         产品名：{productState?.title || "未选择产品"}
                       </Text>
