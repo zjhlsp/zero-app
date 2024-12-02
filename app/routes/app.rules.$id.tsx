@@ -82,15 +82,27 @@ export async function action({ request, params }: any) {
     await db.discount2.delete({ where: { id: Number(params.id) } });
     return redirect("/app");
   }
+  const errors = validateRule(data);
 
+  if (errors) {
+    return json({ errors }, { status: 422 });
+  }
+  
   data.counts = 0;
-  data.createdAt = new Date();
+  if (data.counts) {
+    data.counts = Number(data.counts);
+  }
   data.startTime = new Date();
   data.endTime = new Date();
-  data.maxUsage = 1;
-  data.spendThreshold = 1;
-  data.discountAmount = 1;
-  data.status = "active";
+  if (data.maxUsage) {
+    data.maxUsage = Number(data.maxUsage);
+  }
+  if (data.spendThreshold) {
+    data.spendThreshold = Number(data.spendThreshold);
+  }
+  if (data.discountAmount) {
+    data.discountAmount = Number(data.discountAmount);
+  }
   if (data.id) {
     data.id = Number(data.id);
   }
@@ -185,7 +197,7 @@ export default function RuleForm() {
                   autoComplete="off"
                   value={formState.name}
                   onChange={(name) => setFormState({ ...formState, name })}
-                  error={errors.title}
+                  error={errors.name}
                 />
                 <TextField
                   id="name"
@@ -194,7 +206,9 @@ export default function RuleForm() {
                   labelHidden
                   autoComplete="off"
                   value={formState.description}
-                  onChange={(description) => setFormState({ ...formState, description })}
+                  onChange={(description) =>
+                    setFormState({ ...formState, description })
+                  }
                   error={errors.description}
                 />
                 <ChoiceList
@@ -268,8 +282,11 @@ export default function RuleForm() {
                       >
                         选择产品
                       </Button>
-                      {errors.id ? (
-                        <InlineError message={errors.id} fieldID="myFieldID" />
+                      {errors.requiredProductId ? (
+                        <InlineError
+                          message={errors.requiredProductId}
+                          fieldID="myFieldID"
+                        />
                       ) : null}
                     </BlockStack>
                   </InlineStack>
@@ -316,8 +333,11 @@ export default function RuleForm() {
                       >
                         选择赠品
                       </Button>
-                      {errors.id ? (
-                        <InlineError message={errors.id} fieldID="myFieldID" />
+                      {errors.giftedProductId ? (
+                        <InlineError
+                          message={errors.giftedProductId}
+                          fieldID="giftedProductId"
+                        />
                       ) : null}
                     </BlockStack>
                   </InlineStack>
@@ -346,6 +366,12 @@ export default function RuleForm() {
                       }
                       autoComplete="off"
                     />
+                    {errors.maxGiftedQuantity ? (
+                      <InlineError
+                        message={errors.maxGiftedQuantity}
+                        fieldID="maxGiftedQuantity"
+                      />
+                    ) : null}
                   </InlineStack>
                 </BlockStack>
               </Card>
@@ -359,32 +385,31 @@ export default function RuleForm() {
             <Layout.Section>
               <Card>
                 <BlockStack gap="500">
-                <TextField
-                  label="触发额度"
-                  type="number"
-                  value={(formState?.spendThreshold as string) || "1"}
-                  onChange={(number) =>
-                    setFormState({
-                      ...formState,
-                      spendThreshold: Number(number),
-                    })
-                  }
-                  autoComplete="off"
-                />
-                <TextField
-                  label="减免价格"
-                  type="number"
-                  value={(formState?.discountAmount as string) || "1"}
-                  onChange={(number) =>
-                    setFormState({
-                      ...formState,
-                      discountAmount: Number(number),
-                    })
-                  }
-                  autoComplete="off"
-                />
+                  <TextField
+                    label="触发额度"
+                    type="number"
+                    value={(formState?.spendThreshold as string) || "1"}
+                    onChange={(number) =>
+                      setFormState({
+                        ...formState,
+                        spendThreshold: Number(number),
+                      })
+                    }
+                    autoComplete="off"
+                  />
+                  <TextField
+                    label="减免价格"
+                    type="number"
+                    value={(formState?.discountAmount as string) || "1"}
+                    onChange={(number) =>
+                      setFormState({
+                        ...formState,
+                        discountAmount: Number(number),
+                      })
+                    }
+                    autoComplete="off"
+                  />
                 </BlockStack>
-
               </Card>
             </Layout.Section>
           </>

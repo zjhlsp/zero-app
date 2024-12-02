@@ -81,7 +81,7 @@ function truncate(str:string, { length = 25 } = {}) {
     if (str === 'active') {
       return '启用'
     }
-    if (str === 'spend_x_save_y') {
+    if (str === 'inactive') {
       return '禁用'
     }
     if (str.length <= length) return str;

@@ -31,6 +31,10 @@ export function validateRule(data) {
       errors.giftedProductId = "请检查买赠产品";
       errors.requiredProductId = "请检查买赠产品";
     }
+    if (data.maxGiftedQuantity < data.giftedQuantity) {
+      errors.maxGiftedQuantity = "最大数量不能小于单次赠送数量";
+      
+    }
   } else if (data.type === "spend_x_save_y") {
     if (!data.spendThreshold || !data.discountAmount) {
       errors.spendThreshold = "请检查消费金额和减免金额";
