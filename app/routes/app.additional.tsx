@@ -12,6 +12,7 @@ import {
 import { json } from "@remix-run/node";
 import { useFetcher } from "@remix-run/react";
 import { TitleBar } from "@shopify/app-bridge-react";
+import { useState, useEffect } from "react";
 
 // action 负责处理 POST 请求
 export async function action({ request }: any) {
@@ -31,10 +32,29 @@ export async function action({ request }: any) {
 
 export default function AdditionalPage() {
   const fetcher = useFetcher();
+  
+  // 管理按钮的加载状态
+  const [button1Loading, setButton1Loading] = useState(false);
+  const [button2Loading, setButton2Loading] = useState(false);
 
   const handlePost = (actionType: string) => {
+    if (actionType === "button1") {
+      setButton1Loading(true);
+    } else if (actionType === "button2") {
+      setButton2Loading(true);
+    }
+
+    // 触发提交请求
     fetcher.submit({ actionType }, { method: "post" });
   };
+
+  // 使用 useEffect 来避免每次渲染时更新状态
+  useEffect(() => {
+    if (fetcher.data) {
+      setButton1Loading(false);
+      setButton2Loading(false);
+    }
+  }, [fetcher.data]); // 只有当 fetcher.data 发生变化时才更新按钮状态
 
   return (
     <Page>
@@ -43,8 +63,20 @@ export default function AdditionalPage() {
         <Layout.Section>
           <Card>
             <BlockStack gap="300">
-              <Button onClick={() => handlePost("button1")}>触发接口1</Button>
-              <Button onClick={() => handlePost("button2")}>触发接口2</Button>
+              <Button 
+                onClick={() => handlePost("button1")} 
+                loading={button1Loading}
+                disabled={button1Loading}
+              >
+                触发接口1
+              </Button>
+              <Button 
+                onClick={() => handlePost("button2")} 
+                loading={button2Loading}
+                disabled={button2Loading}
+              >
+                触发接口2
+              </Button>
               {fetcher.data && (
                 <Text as="p" variant="bodyMd">
                   接口返回数据：{fetcher.data.info}, 消息：{fetcher.data.msg}

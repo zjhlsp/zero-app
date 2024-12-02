@@ -17,6 +17,7 @@ import {
 
 import { getRules } from "../models/discount.server";
 import {  RuleTable, EmptyRulesState } from "./component";
+import db from '../db.server'
 
 export async function loader({ request }:any) {
   const { admin, session } = await authenticate.admin(request);
@@ -28,14 +29,19 @@ export async function loader({ request }:any) {
     Shop
   });
 }
+export async function action({ request }: any) {
+  const formData = await request.formData();
+  const actionType = formData.get("action");
+  if (actionType === "delete") {
+    await db.discount2.delete({ where: { id: Number(formData.get("id")) } });
+  }
 
-
-
+  return json({ info: "删除", msg: "删除成功" });
+}
 
 export default function Index() {
   const { Rules, Shop }:any = useLoaderData();
   const navigate = useNavigate();
-
 
   return (
     <Page>

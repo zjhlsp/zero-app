@@ -387,25 +387,27 @@ export default function RuleForm() {
                   <TextField
                     label="触发额度"
                     type="number"
-                    value={(formState?.spendThreshold as string) || "1"}
+                    value={(formState?.spendThreshold as string)}
                     onChange={(number) =>
                       setFormState({
                         ...formState,
                         spendThreshold: Number(number),
                       })
                     }
+                    error={errors.spendThreshold}
                     autoComplete="off"
                   />
                   <TextField
                     label="减免价格"
                     type="number"
-                    value={(formState?.discountAmount as string) || "1"}
+                    value={(formState?.discountAmount as string)}
                     onChange={(number) =>
                       setFormState({
                         ...formState,
                         discountAmount: Number(number),
                       })
                     }
+                    error={errors.discountAmount}
                     autoComplete="off"
                   />
                 </BlockStack>

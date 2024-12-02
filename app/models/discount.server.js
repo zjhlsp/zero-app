@@ -104,13 +104,11 @@ export async function supplementRule(rule, graphql) {
       product: {
         title: requiredProduct?.title,
         img: requiredProduct?.images?.nodes[0]?.url,
-        // alt: requiredProduct?.images?.nodes[0]?.altText,
   
       },
       gift: {
         title: giftedProduct?.title,
         img: giftedProduct?.images?.nodes[0]?.url,
-        // alt: giftedProduct?.images?.nodes[0]?.altText,
       }
     }
   }

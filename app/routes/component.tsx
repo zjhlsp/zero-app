@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { useLoaderData, Link, useNavigate } from "@remix-run/react";
+import { useLoaderData, Link, useFetcher, useNavigate } from "@remix-run/react";
+import { useEffect } from "react";
+
 import {
   Card,
   EmptyState,
@@ -14,7 +16,8 @@ import {
   Icon,
   InlineStack,
 } from "@shopify/polaris";
-import {EditIcon, DeleteIcon} from '@shopify/polaris-icons';
+import { json } from "@remix-run/node";
+import { EditIcon, DeleteIcon } from "@shopify/polaris-icons";
 import db from "../db.server";
 import type { RuleData } from "./rule.model";
 export const EmptyRulesState = ({ onAction }: any) => (
@@ -30,7 +33,7 @@ export const EmptyRulesState = ({ onAction }: any) => (
   </EmptyState>
 );
 
-export const RuleTable = ({ Rules }: {Rules:RuleData[]}) => (
+export const RuleTable = ({ Rules }: { Rules: RuleData[] }) => (
   <IndexTable
     resourceName={{
       singular: "Rule",
@@ -54,57 +57,61 @@ export const RuleTable = ({ Rules }: {Rules:RuleData[]}) => (
   </IndexTable>
 );
 
-export const RuleTableRow = ({ rule }:{rule:any}) => {
-    const navigate = useNavigate();
-    const handleDelete = async (id:number) => {
-      await db.discount2.delete({
-        where: { id: Number(id) }
-      });
-    }
+export const RuleTableRow = ({ rule }: { rule: any }) => {
+  const fetcher = useFetcher();
+  const navigate = useNavigate();
+  const handleDelete = async (id: number) => {
+    fetcher.submit({ action: "delete", id }, { method: "post" });
+  };
   return (
     <IndexTable.Row id={rule.id} position={rule.id}>
       <IndexTable.Cell>
-          <span>{rule.name}</span>
+        <span>{rule.name}</span>
       </IndexTable.Cell>
       <IndexTable.Cell>
-          <span>{rule.name}</span>
+        <span>{rule.name}</span>
       </IndexTable.Cell>
-      <IndexTable.Cell>
-        {truncate(rule.type)}
-      </IndexTable.Cell>
+      <IndexTable.Cell>{truncate(rule.type)}</IndexTable.Cell>
       <IndexTable.Cell>
         {new Date(rule.createdAt).toDateString()}
       </IndexTable.Cell>
-      <IndexTable.Cell>
-        {truncate(rule.status)}
-      </IndexTable.Cell>
+      <IndexTable.Cell>{truncate(rule.status)}</IndexTable.Cell>
       <IndexTable.Cell>{rule.counts}</IndexTable.Cell>
       <IndexTable.Cell>
-      <ButtonGroup>
-        <Button onClick={() => navigate(`rules/${rule.id}`)} icon={EditIcon}>编辑</Button>
-        <Button onClick={() => handleDelete(rule.id)} icon={DeleteIcon}  tone="critical" >删除</Button>
-      </ButtonGroup>
+        <ButtonGroup>
+          <Button
+            onClick={() => navigate(`rules/${rule.id}`)}
+            icon={EditIcon}
+          >
+            编辑
+          </Button>
+          <Button
+            onClick={() => handleDelete(rule.id)}
+            icon={DeleteIcon}
+            tone="critical"
+          >
+            删除
+          </Button>
+        </ButtonGroup>
       </IndexTable.Cell>
-  
     </IndexTable.Row>
-  )
+  );
 };
 
-
-function truncate(str:string, { length = 25 } = {}) {
-    if (!str) return "";
-    if (str === 'buy_x_get_y') {
-      return '买赠'
-    }
-    if (str === 'spend_x_save_y') {
-      return '满减'
-    }
-    if (str === 'active') {
-      return '🟢 启用'
-    }
-    if (str === 'inactive') {
-      return '🟠 禁用'
-    }
-    if (str.length <= length) return str;
-    return str.slice(0, length) + "…";
+function truncate(str: string, { length = 25 } = {}) {
+  if (!str) return "";
+  if (str === "buy_x_get_y") {
+    return "买赠";
   }
+  if (str === "spend_x_save_y") {
+    return "满减";
+  }
+  if (str === "active") {
+    return "🟢 启用";
+  }
+  if (str === "inactive") {
+    return "🟠 禁用";
+  }
+  if (str.length <= length) return str;
+  return str.slice(0, length) + "…";
+}
